@@ -1,25 +1,47 @@
-# Sacrifices Must Be Made 🐍🕯️
+# 🐍 Sacrifices Must Be Made
 
-A dark reimagining of the classic Snake game built with **Pygame**.  
-To gain power, sacrifices must be made...
+A reimagined **Snake Game** built with **Pygame**, themed around choice and sacrifice.  
+What will you give up to gain power?
 
-## 🎮 Features
-- Classic Snake gameplay
-- Apples for points and growth
-- Altar appears every 225 points with **sacrifice choices**:
-  1. Embrace Greed (+1–50 pts, grow)
-  2. Sacrifice Self (-3 length, -0.1x multiplier)
-  3. Halve Thyself (shrink half, multiplier fixed 0.5x)
-  4. Twisted Fate (inverted controls, +1x multiplier for 20s or +100 pts)
-- Dark stone background and altar visuals
-- Intro screen with music
-- Sound effects for eating, dying, and background ambience
-- Progress bar that fills as you near the next altar
+---
 
-## 🛠️ Requirements
-- Python 3.9+
-- pygame (`pip install -r requirements.txt`)
+## ✨ Features
+- Classic Snake gameplay with twists:
+  - 🍎 **Apple** → +10 points, snake grows
+  - 🛕 **Altar** → Appears every 225 points, offering risky blessings
+- **Altar Choices**:
+  1. **Embrace Greed** → Gain +1–50 points (snake grows slightly)
+  2. **Sacrifice Self** → Remove 3 length, -0.1x multiplier
+  3. **Halve Thyself** → Snake shrinks by half, multiplier fixed at 0.5x
+  4. **Twisted Fate** → Inverted controls but +1x multiplier (lasts 20s or 100 points)
+- ⚡ **Score Multiplier** system that changes based on choices
+- 🎶 **Background music** + sound effects (`eat`, `gameover`, `intro`)
+- 🖼 **Custom assets**: background, apple, altar, intro screen
+- 📊 **Altar Progress Bar** fills as score approaches altar threshold
+- Intro menu with **New Game** / **Exit**
 
-## ▶️ How to Run
+---
+
+## 🎮 Controls
+- **Arrow keys** → Move snake
+- **E** → Interact with altar
+- **P** → Pause game
+- **R** → Restart after death
+- **ESC** → Quit game
+- **Enter / Space** → Confirm altar choice / menu selection
+- **W/S or ↑/↓** → Navigate altar options / menu
+
+---
+
+## 📦 Requirements
+Install dependencies with:
 ```bash
-python game.py
+pip install -r requirements.txt
+```
+
+---
+
+## ▶️ Run Game
+```bash
+python snake.py
+```
