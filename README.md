@@ -48,5 +48,6 @@ python snake.py
 ---
 
 ## 🤖 AI Usage
-CHATGPT = Asset & README.md Generation
-GitHub Copilot = Error Handling and Little bit of Game Mechanics
+- CHATGPT = Asset & README.md Generation
+- GitHub Copilot = Error Handling and Little bit of Game Mechanics
+
