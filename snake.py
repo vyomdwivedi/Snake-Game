@@ -2,6 +2,7 @@ import pygame
 import sys
 import random
 from collections import deque
+from pathlib import Path
 
 CELL_SIZE = 20
 GRID_WIDTH = 30
@@ -10,11 +11,12 @@ SCREEN_WIDTH = CELL_SIZE * GRID_WIDTH
 SCREEN_HEIGHT = CELL_SIZE * GRID_HEIGHT
 FPS = 12
 
+ASSETS_DIR = Path("assets")
+
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 200, 0)
 DARK_GREEN = (0, 120, 0)
-RED = (200, 0, 0)
 
 def grid_to_pixel(pos):
     x, y = pos
@@ -26,6 +28,13 @@ def random_empty_cell(occupied):
         y = random.randrange(GRID_HEIGHT)
         if (x, y) not in occupied:
             return (x, y)
+
+def load_image_scaled(path, size):
+    try:
+        surf = pygame.image.load(str(path)).convert_alpha()
+        return pygame.transform.smoothscale(surf, size)
+    except Exception:
+        return None
 
 class Snake:
     def __init__(self):
@@ -54,7 +63,6 @@ class Snake:
     def set_direction(self, new_dir):
         dx, dy = new_dir
         cdx, cdy = self.direction
-        # prevent reversing
         if (dx == -cdx and dy == -cdy) and len(self.segments) > 1:
             return
         self.direction = (dx, dy)
@@ -65,9 +73,13 @@ class Game:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Snake Game - Commit 1")
+        pygame.display.set_caption("Snake Game - Commit 2")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("arial", 20)
+
+        # Load assets
+        self.bg_img = load_image_scaled(ASSETS_DIR / "bg.png", (SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.apple_img = load_image_scaled(ASSETS_DIR / "apple.png", (CELL_SIZE, CELL_SIZE))
 
         self.reset()
 
@@ -86,7 +98,12 @@ class Game:
             self.apple = random_empty_cell(set(self.snake.segments))
 
     def draw(self):
-        self.screen.fill(BLACK)
+        # background
+        if self.bg_img:
+            self.screen.blit(self.bg_img, (0, 0))
+        else:
+            self.screen.fill(BLACK)
+
         # draw snake
         for i, seg in enumerate(self.snake.segments):
             x, y = grid_to_pixel(seg)
@@ -95,7 +112,10 @@ class Game:
 
         # draw apple
         ax, ay = grid_to_pixel(self.apple)
-        pygame.draw.rect(self.screen, RED, (ax, ay, CELL_SIZE, CELL_SIZE))
+        if self.apple_img:
+            self.screen.blit(self.apple_img, (ax, ay))
+        else:
+            pygame.draw.circle(self.screen, (255, 0, 0), (ax + CELL_SIZE//2, ay + CELL_SIZE//2), CELL_SIZE//2)
 
         # draw score
         text = self.font.render(f"Score: {self.score}", True, WHITE)
