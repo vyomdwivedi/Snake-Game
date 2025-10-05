@@ -45,3 +45,8 @@ pip install -r requirements.txt
 ```bash
 python snake.py
 ```
+---
+
+## 🤖 AI Usage
+CHATGPT = Asset & README.md Generation
+GitHub Copilot = Error Handling and Little bit of Game Mechanics
