@@ -67,11 +67,14 @@ class Snake:
         self.grow_pending = 0
         self.alive = True
 
+
     def head(self): 
         return self.segments[0]
 
+
     def move(self):
-        if not self.alive: return
+        if not self.alive: 
+            return
         dx, dy = self.direction
         hx, hy = self.head()
         new_head = ((hx + dx) % GRID_WIDTH, (hy + dy) % GRID_HEIGHT)
@@ -80,6 +83,7 @@ class Snake:
             self.grow_pending -= 1
         else:
             self.segments.pop()
+
 
     def set_direction(self, new_dir, inverted=False):
         dx, dy = new_dir
@@ -90,19 +94,23 @@ class Snake:
             return
         self.direction = (dx, dy)
 
+
     def grow(self, n=1): 
         self.grow_pending += n
+
 
     def shorten(self, n):
         for _ in range(n):
             if len(self.segments) > 1:
                 self.segments.pop()
 
+
     def shrink_half(self):
         half = len(self.segments) // 2
         for _ in range(half):
             if len(self.segments) > 1:
                 self.segments.pop()
+
 
     def check_self_collision(self):
         head = self.head()
@@ -137,6 +145,7 @@ class Game:
         self.menu_index = 0
         self.reset()
 
+
     def reset(self):
         self.snake = Snake()
         self.score = 0
@@ -157,6 +166,7 @@ class Game:
         pygame.mixer.music.load(str(self.music_bg))
         pygame.mixer.music.play(-1)
 
+
     def spawn_altar(self):
         occupied = set(self.snake.segments)
         while True:
@@ -168,10 +178,13 @@ class Game:
                 self.altar_active = True
                 break
 
+
     def altar_cells(self):
-        if not self.altar_pos: return []
+        if not self.altar_pos: 
+            return []
         ax, ay = self.altar_pos
         return [(ax+i, ay+j) for i in range(4) for j in range(4)]
+
 
     def update(self):
         if self.paused or self.altar_popup or not self.snake.alive or self.in_intro:
@@ -191,10 +204,15 @@ class Game:
             self.offering_pos = random_empty_cell(set(self.snake.segments))
             if self.sfx_eat: self.sfx_eat.play()
 
-        # Check for altar
+        # Spawn altar
         if self.score - self.last_altar_trigger >= 225 and not self.altar_active:
             self.spawn_altar()
             self.last_altar_trigger = self.score
+
+        # Auto altar activation on collision
+        if self.altar_active and self.snake.head() in self.altar_cells():
+            self.altar_popup = True
+            self.selected_option = 0
 
         # Handle inverted controls expiry
         if self.inverted_controls:
@@ -202,38 +220,30 @@ class Game:
                 self.inverted_controls = False
                 self.messages.append(["Inversion faded.", FPS * 3])
 
-    def interact_with_altar(self):
-        if not self.altar_active: return
-        hx, hy = self.snake.head()
-        for cell in self.altar_cells():
-            if abs(cell[0] - hx) + abs(cell[1] - hy) <= 1:
-                self.altar_popup = True
-                self.selected_option = 0
-                return
 
     def apply_choice(self):
         self.altar_popup = False
         self.altar_active = False
         msg = ""
 
-        if self.selected_option == 0:  # Gain random points
+        if self.selected_option == 0:
             pts = random.randint(1, 50)
             msg = f"Embrace Greed: +{pts} pts"
             self.score += pts
             self.snake.grow(max(1, pts // 10))
 
-        elif self.selected_option == 1:  # Reduce length, lower multiplier
+        elif self.selected_option == 1:
             if len(self.snake.segments) > 4:
                 self.snake.shorten(3)
             self.multiplier = max(0.5, round(self.multiplier - 0.1, 2))
             msg = f"Sacrifice Self: Multiplier {self.multiplier:.1f}x"
 
-        elif self.selected_option == 2:  # Shrink half
+        elif self.selected_option == 2:
             self.snake.shrink_half()
             self.multiplier = 0.5
             msg = "Halve Thyself: Multiplier fixed at 0.5x"
 
-        elif self.selected_option == 3:  # Inverted controls
+        elif self.selected_option == 3:
             self.inverted_controls = True
             self.multiplier += 1.0
             self.invert_end_time = time.time() + 20
@@ -242,11 +252,13 @@ class Game:
 
         self.messages.append([msg, FPS * 3])
 
+
     def draw_background(self):
         if self.bg_img:
             self.screen.blit(self.bg_img, (0, 0))
         else:
             self.screen.fill(BLACK)
+
 
     def draw_snake(self):
         for i, seg in enumerate(self.snake.segments):
@@ -255,14 +267,20 @@ class Game:
             pygame.draw.rect(self.screen, color, (x, y, CELL_SIZE, CELL_SIZE))
             pygame.draw.rect(self.screen, BLACK, (x, y, CELL_SIZE, CELL_SIZE), 1)
 
+
     def draw_altar(self):
-        if not self.altar_active: return
-        for cell in self.altar_cells():
-            px, py = grid_to_pixel(cell)
-            if self.altar_img:
-                self.screen.blit(self.altar_img, (px, py))
-            else:
-                pygame.draw.rect(self.screen, PURPLE, (px, py, CELL_SIZE, CELL_SIZE))
+        if not self.altar_active: 
+            return
+        ax, ay = self.altar_pos
+        px, py = grid_to_pixel((ax, ay))
+        altar_size = (CELL_SIZE * 4, CELL_SIZE * 4)
+
+        if self.altar_img:
+            big_altar = pygame.transform.smoothscale(self.altar_img, altar_size)
+            self.screen.blit(big_altar, (px, py))
+        else:
+            pygame.draw.rect(self.screen, PURPLE, (px, py, altar_size[0], altar_size[1]))
+
 
     def draw_apple(self):
         x, y = grid_to_pixel(self.offering_pos)
@@ -270,6 +288,7 @@ class Game:
             self.screen.blit(self.apple_img, (x, y))
         else:
             pygame.draw.circle(self.screen, GOLD, (x + CELL_SIZE//2, y + CELL_SIZE//2), CELL_SIZE//2 - 2)
+
 
     def draw_hud(self):
         hud_rect = pygame.Rect(0, GRID_HEIGHT * CELL_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT - GRID_HEIGHT * CELL_SIZE)
@@ -281,16 +300,6 @@ class Game:
         score_text = self.font.render(f"Score: {int(self.score)}   x{self.multiplier:.1f}", True, GOLD)
         self.screen.blit(score_text, (10, GRID_HEIGHT * CELL_SIZE + 40))
 
-        # Progress bar for altar
-        progress = (self.score - self.last_altar_trigger) / 225
-        progress = min(max(progress, 0), 1)
-        bar_w, bar_h = 200, 18
-        bar_x = SCREEN_WIDTH - bar_w - 20
-        bar_y = GRID_HEIGHT * CELL_SIZE + 40
-        pygame.draw.rect(self.screen, GRAY, (bar_x, bar_y, bar_w, bar_h))
-        pygame.draw.rect(self.screen, GOLD, (bar_x, bar_y, int(bar_w * progress), bar_h))
-        pygame.draw.rect(self.screen, WHITE, (bar_x, bar_y, bar_w, bar_h), 2)
-
         if not self.snake.alive:
             over = self.big_font.render("You Fell.", True, RED)
             sub = self.font.render("Press R to restart.", True, WHITE)
@@ -299,7 +308,7 @@ class Game:
 
         if self.inverted_controls:
             warn = self.font.render("⚡ Inverted Controls Active!", True, RED)
-            self.screen.blit(warn, (SCREEN_WIDTH - warn.get_width() - 10, GRID_HEIGHT * CELL_SIZE + 10))
+            self.screen.blit(warn, (SCREEN_WIDTH - warn.get_width() - 10, GRID_HEIGHT * CELL_SIZE + 40))
 
         for i, (txt, t) in enumerate(list(self.messages)):
             m = self.font.render(txt, True, WHITE)
@@ -307,6 +316,7 @@ class Game:
             self.messages[i][1] -= 1
             if self.messages[i][1] <= 0:
                 self.messages.remove(self.messages[i])
+
 
     def draw_popup(self):
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
@@ -336,6 +346,7 @@ class Game:
         hint = self.font.render("Use ↑↓ and Enter to choose", True, GRAY)
         self.screen.blit(hint, (SCREEN_WIDTH//2 - hint.get_width()//2, by + 175))
 
+
     def draw_intro(self):
         if self.intro_img:
             self.screen.blit(self.intro_img, (0, 0))
@@ -347,6 +358,7 @@ class Game:
             color = GOLD if i == self.menu_index else WHITE
             txt = self.big_font.render(opt, True, color)
             self.screen.blit(txt, (SCREEN_WIDTH//2 - txt.get_width()//2, 250 + i*60))
+
 
     def handle_input(self, event):
         if event.type == pygame.KEYDOWN:
@@ -374,9 +386,9 @@ class Game:
                 elif event.key == pygame.K_LEFT: self.snake.set_direction((-1, 0), self.inverted_controls)
                 elif event.key == pygame.K_RIGHT: self.snake.set_direction((1, 0), self.inverted_controls)
                 elif event.key == pygame.K_p: self.paused = not self.paused
-                elif event.key == pygame.K_e: self.interact_with_altar()
                 elif event.key == pygame.K_r and not self.snake.alive: self.reset()
                 elif event.key == pygame.K_ESCAPE: pygame.quit(); sys.exit()
+
 
     def run(self):
         pygame.mixer.music.load(str(self.music_intro))
@@ -384,7 +396,8 @@ class Game:
 
         while True:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT: pygame.quit(); sys.exit()
+                if event.type == pygame.QUIT:
+                    pygame.quit(); sys.exit()
                 self.handle_input(event)
 
             if self.in_intro:
@@ -400,6 +413,7 @@ class Game:
 
             pygame.display.flip()
             self.clock.tick(FPS)
+
 
 
 if __name__ == "__main__":
